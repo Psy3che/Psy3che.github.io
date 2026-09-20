@@ -1,4 +1,4 @@
-
+<!-- 
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -236,5 +236,347 @@
         <p>如果是第一次去蔚蓝海岸，建议<strong>3晚都住在尼斯</strong>。每天轻装坐火车/公交往返周边小镇，不用频繁搬行李，交通也最方便。</p>
     </div>
 
+</body>
+</html> -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>抽奖奖品记录系统</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Microsoft YaHei", sans-serif; }
+        body { max-width: 950px; margin: 30px auto; padding: 0 20px; background: #f5f7fa; }
+        h1 { text-align: center; color: #2c3e50; margin-bottom: 30px; }
+        .form-card { background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.1); margin-bottom: 30px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #34495e; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; }
+        input:focus, select:focus { outline: none; border-color: #3498db; }
+        button { background: #3498db; color: white; border: none; padding: 13px 30px; border-radius: 6px; font-size: 16px; cursor: pointer; transition: background 0.3s; }
+        button:hover { background: #2980b9; }
+        button.danger { background: #e74c3c; }
+        button.danger:hover { background: #c0392b; }
+        button.success { background: #27ae60; }
+        button.success:hover { background: #219653; }
+        button.small { padding: 8px 16px; font-size: 14px; width: auto; }
+        .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px; }
+        .message { margin-top: 15px; padding: 12px; border-radius: 6px; display: none; }
+        .error { background: #fee; color: #c0392b; border: 1px solid #fcc; }
+        .success { background: #efe; color: #27ae60; border: 1px solid #cfc; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+        table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.1); margin-top: 20px; }
+        th, td { padding: 14px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #34495e; color: white; }
+        tr:hover { background: #f8f9fa; }
+        .empty-tip { text-align: center; color: #999; padding: 30px; }
+        .admin-section { border-top: 1px dashed #ddd; padding-top: 20px; margin-top: 20px; }
+        .hidden { display: none !important; }
+        .auth-bar { background: #eef2f5; padding: 10px 15px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .delete-btn { padding: 5px 12px; font-size: 13px; background: #e74c3c; }
+        .delete-btn:hover { background: #c0392b; }
+    </style>
+</head>
+<body>
+    <h1>🎁 抽奖奖品记录系统</h1>
+
+    <!-- 管理员登录/状态区 -->
+    <div class="auth-bar" id="authBar">
+        <span id="authStatus">🔒 导出、删除与清空需管理员验证</span>
+        <div>
+            <input type="password" id="adminPwd" placeholder="输入管理员密码" style="width: 180px; padding: 8px;">
+            <button class="small" id="loginBtn">验证</button>
+            <button class="small hidden" id="logoutBtn">退出</button>
+        </div>
+    </div>
+
+    <div class="form-card">
+        <div class="form-group">
+            <label for="employeeId">工号</label>
+            <input type="text" id="employeeId" placeholder="请输入工号" autocomplete="off" required>
+        </div>
+
+        <div class="form-group">
+            <label for="prize">选择奖品</label>
+            <select id="prize">
+                <option value="">-- 请选择抽中的奖品 --</option>
+                <option value="湿纸巾">湿纸巾</option>
+                <option value="洗手液">洗手液</option>
+                <option value="洗碗精">洗碗精</option>
+                <option value="护手霜">护手霜</option>
+                <option value="清洁剂">清洁剂</option>
+                <option value="体重计">体重计</option>
+                <option value="滤水壶">滤水壶</option>
+                <option value="小米音箱">小米音箱</option>
+                <option value="果汁机">果汁机</option>
+                <option value="冲牙器">冲牙器</option>
+                <option value="空气炸锅">空气炸锅</option>
+                <option value="直饮热水器">直饮热水器</option>
+                <option value="火锅炉">火锅炉</option>
+                <option value="电饭煲">电饭煲</option>
+                <option value="咖啡机">咖啡机</option>
+                <option value="扫地机器人">扫地机器人</option>
+                <option value="自行车">自行车</option>
+                <option value="投影仪">投影仪</option>
+            </select>
+        </div>
+
+        <button id="submitBtn">提交记录</button>
+        <div id="message" class="message"></div>
+
+        <!-- 管理员操作区 -->
+        <div class="admin-section" id="adminActions">
+            <h3>⚙️ 管理操作</h3>
+            <div class="btn-row">
+                <button class="small success" id="exportCsv" disabled>导出 CSV</button>
+                <button class="small success" id="exportExcel" disabled>导出 Excel</button>
+                <button class="small danger" id="clearAll" disabled>清空全部记录</button>
+            </div>
+        </div>
+    </div>
+
+    <h2>📋 中奖记录</h2>
+    <table id="recordTable">
+        <thead>
+            <tr>
+                <th>序号</th>
+                <th>工号</th>
+                <th>奖品名称</th>
+                <th>记录时间</th>
+                <th id="actionCol" class="hidden">操作</th>
+            </tr>
+        </thead>
+        <tbody id="recordList">
+            <tr><td colspan="5" class="empty-tip">暂无记录</td></tr>
+        </tbody>
+    </table>
+
+    <script>
+        // ========== 配置区 ==========
+        const ADMIN_PASSWORD = "admin123"; // 可自行修改管理员密码
+        // ==========================
+
+        let submittedIds = new Set();
+        let records = [];
+        let isAdmin = false;
+
+        // DOM 元素
+        const idInput = document.getElementById('employeeId');
+        const prizeSelect = document.getElementById('prize');
+        const submitBtn = document.getElementById('submitBtn');
+        const messageBox = document.getElementById('message');
+        const recordList = document.getElementById('recordList');
+        const adminPwdInput = document.getElementById('adminPwd');
+        const loginBtn = document.getElementById('loginBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const authStatus = document.getElementById('authStatus');
+        const exportCsvBtn = document.getElementById('exportCsv');
+        const exportExcelBtn = document.getElementById('exportExcel');
+        const clearAllBtn = document.getElementById('clearAll');
+        const actionCol = document.getElementById('actionCol');
+
+        // 加载数据
+        function loadData() {
+            const savedRecords = localStorage.getItem('lotteryRecords');
+            if (savedRecords) {
+                records = JSON.parse(savedRecords);
+                submittedIds = new Set(records.map(r => r.employeeId));
+                renderRecords();
+            }
+        }
+
+        // 保存数据
+        function saveData() {
+            localStorage.setItem('lotteryRecords', JSON.stringify(records));
+        }
+
+        // 显示提示
+        function showMessage(text, type) {
+            messageBox.textContent = text;
+            messageBox.className = `message ${type}`;
+            messageBox.style.display = 'block';
+            setTimeout(() => messageBox.style.display = 'none', 4000);
+        }
+
+        // 渲染表格
+        function renderRecords() {
+            if (records.length === 0) {
+                recordList.innerHTML = '<tr><td colspan="5" class="empty-tip">暂无记录</td></tr>';
+                return;
+            }
+            recordList.innerHTML = records.map((r, index) => `
+                <tr data-index="${index}">
+                    <td>${index + 1}</td>
+                    <td>${r.employeeId}</td>
+                    <td>${r.prizeName}</td>
+                    <td>${r.submitTime}</td>
+                    <td class="${isAdmin ? '' : 'hidden'}">
+                        <button class="small delete-btn" data-delete="${index}">删除</button>
+                    </td>
+                </tr>
+            `).join('');
+            
+            // 绑定删除事件
+            document.querySelectorAll('[data-delete]').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    if (!isAdmin) {
+                        showMessage('❌ 请先以管理员身份验证！', 'error');
+                        return;
+                    }
+                    const idx = parseInt(e.target.dataset.delete);
+                    deleteRecord(idx);
+                });
+            });
+        }
+
+        // 删除单条记录
+        function deleteRecord(index) {
+            const record = records[index];
+            if (!confirm(`⚠️ 确定要删除这条记录吗？\n工号：${record.employeeId}\n奖品：${record.prizeName}`)) {
+                return;
+            }
+            // 从数组中移除
+            records.splice(index, 1);
+            // 重新检查工号集合（可能有重复工号，需重建）
+            submittedIds = new Set(records.map(r => r.employeeId));
+            saveData();
+            renderRecords();
+            showMessage('✅ 记录已删除！', 'success');
+        }
+
+        // 更新管理按钮状态
+        function updateAdminUI() {
+            const btns = [exportCsvBtn, exportExcelBtn, clearAllBtn];
+            if (isAdmin) {
+                authStatus.textContent = '✅ 管理员已登录';
+                loginBtn.classList.add('hidden');
+                logoutBtn.classList.remove('hidden');
+                adminPwdInput.disabled = true;
+                actionCol.classList.remove('hidden');
+                btns.forEach(b => b.disabled = false);
+            } else {
+                authStatus.textContent = '🔒 导出、删除与清空需管理员验证';
+                loginBtn.classList.remove('hidden');
+                logoutBtn.classList.add('hidden');
+                adminPwdInput.value = '';
+                adminPwdInput.disabled = false;
+                actionCol.classList.add('hidden');
+                btns.forEach(b => b.disabled = true);
+            }
+            renderRecords();
+        }
+
+        // 导出 CSV
+        function exportCSV() {
+            if (!isAdmin) return;
+            const header = ['序号', '工号', '奖品名称', '记录时间'];
+            const rows = records.map((r, i) => [i+1, r.employeeId, r.prizeName, r.submitTime]);
+            const csvContent = '\uFEFF' + [header, ...rows].map(row => row.join(',')).join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `抽奖记录_${new Date().toLocaleDateString('zh-CN')}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showMessage('✅ CSV 导出成功！', 'success');
+        }
+
+        // 导出 Excel
+        function exportExcel() {
+            if (!isAdmin) return;
+            const header = ['序号', '工号', '奖品名称', '记录时间'];
+            const rows = records.map((r, i) => [i+1, r.employeeId, r.prizeName, r.submitTime]);
+            let table = '<table><tr>' + header.map(h => `<th>${h}</th>`).join('') + '</tr>';
+            rows.forEach(row => {
+                table += '<tr>' + row.map(cell => `<td>${cell}</td>`).join('') + '</tr>';
+            });
+            table += '</table>';
+            const blob = new Blob([table], { type: 'application/vnd.ms-excel' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `抽奖记录_${new Date().toLocaleDateString('zh-CN')}.xls`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showMessage('✅ Excel 导出成功！', 'success');
+        }
+
+        // 清空记录
+        function clearRecords() {
+            if (!isAdmin) return;
+            if (!confirm('⚠️ 确定要清空全部记录吗？此操作不可恢复！')) return;
+            records = [];
+            submittedIds.clear();
+            localStorage.removeItem('lotteryRecords');
+            renderRecords();
+            showMessage('🗑️ 所有记录已清空', 'warning');
+        }
+
+        // 提交记录
+        submitBtn.addEventListener('click', () => {
+            const empId = idInput.value.trim();
+            const prizeName = prizeSelect.value;
+
+            if (!empId) {
+                showMessage('请输入工号！', 'error');
+                return;
+            }
+            if (!prizeName) {
+                showMessage('请选择奖品！', 'error');
+                return;
+            }
+            if (submittedIds.has(empId)) {
+                showMessage('⚠️ 每人只允许抽奖一次，该工号已提交过！', 'error');
+                return;
+            }
+
+            const now = new Date();
+            const timeStr = now.toLocaleString('zh-CN', {
+                year: 'numeric', month: '2-digit', day: '2-digit',
+                hour: '2-digit', minute: '2-digit', second: '2-digit'
+            });
+
+            records.unshift({
+                employeeId: empId,
+                prizeName: prizeName,
+                submitTime: timeStr
+            });
+            submittedIds.add(empId);
+
+            saveData();
+            renderRecords();
+            showMessage('✅ 提交成功！感谢参与', 'success');
+
+            idInput.value = '';
+            prizeSelect.value = '';
+        });
+
+        // 管理员登录
+        loginBtn.addEventListener('click', () => {
+            if (adminPwdInput.value === ADMIN_PASSWORD) {
+                isAdmin = true;
+                updateAdminUI();
+                showMessage('✅ 管理员验证通过', 'success');
+            } else {
+                showMessage('❌ 密码错误！', 'error');
+            }
+        });
+
+        // 退出登录
+        logoutBtn.addEventListener('click', () => {
+            isAdmin = false;
+            updateAdminUI();
+        });
+
+        // 绑定导出/清空
+        exportCsvBtn.addEventListener('click', exportCSV);
+        exportExcelBtn.addEventListener('click', exportExcel);
+        clearAllBtn.addEventListener('click', clearRecords);
+
+        // 初始化
+        loadData();
+        updateAdminUI();
+    </script>
 </body>
 </html>
